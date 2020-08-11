@@ -1,0 +1,705 @@
+---
+title: "Sea Bass Data Analysis"
+subtitle: "This document is under development in RStudio"
+author: "Rafi Rasyidi - MSc Data Science and Business Analytic 2018/2019"
+date: "`r format(Sys.time(), '%d %B %Y')`"
+header-includes:
+- \usepackage{pdflscape}
+- \newcommand{\blandscape}{\begin{landscape}}
+- \newcommand{\elandscape}{\end{landscape}}
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+library(dplyr)
+library(readr)
+library(MASS)
+library(tree)
+library(readr)
+library(knitr)
+library(ggmcmc) 
+library(GGally)
+library(lubridate) # for working with dates
+library(scales)   # to access breaks/formatting functions
+library(gridExtra) # for arranging plots
+library(grid)   # for arrangeing plots
+library(dplyr)  # for subsetting by season
+library(tidyverse)
+library(splines)
+library(geofacet)
+library(lattice)
+library(ggmap) # to allow to use 'Google Map'
+library(maps) # to allow to use qmplot
+library(mapdata) # to allow to use data and convert it to map
+library(ggforce)
+setwd("/Users/rafiachmadrasyidi/OneDrive - University of Plymouth/RafiRasyidi-PROJ516 - SeaBassDataandDevelopment/BassAnalysis_New")
+```
+
+This PDF document is under development in R. This document will show you the analysis/plots that author has been produced so far. __Please note that there's maybe an inclomplete analysis, typos, or wrong use of term__. 
+
+- The following are the list of analysis/plots inside document:
+    + Site Location (Under Development)
+    + Salinity and Average Depth (Under Development)
+    + Water and Weather Temperature (Under Development)
+    + Catch Method (Under Development)
+    + Net Techniques (Under Development)
+    + Gear/Equipment use (Under Development)
+    + Machine Learning (Postponed)
+    + Appendices
+
+```{r message=FALSE, echo=FALSE, error=FALSE}
+seaBass <- read_csv("NewDataBass.csv", na = c("", "NA", "."))
+attach(seaBass) 
+# add month to data_frame
+# seaBass$year <- year(seaBass$Date)
+# #
+# seaBass$month <- month(seaBass$Date)
+# #
+# seaBass$Year <- format(as.Date(seaBass$Date), "%Y")
+# #
+# seaBass$Month <- format(as.Date(seaBass$Date), "%m")
+# # 
+# myData <- data.frame(seaBass, seaBass$Year, seaBass$Month)
+```
+
+\blandscape
+
+# Chapter 1 - Analysis in All Site Names during Sampling.
+
+# All Site Names Visited for Sampling
+
+The following plot shows all site names visited by Derek Goodwin and a voluntery team during bass sampling in 1998-2018.
+```{r message=FALSE, error=FALSE, echo=FALSE, fig.height=5.5, fig.width=10, fig.align='center'}
+#reorder levels
+reorder_size <- function(x) {
+        factor(x, levels = names(sort(table(x), decreasing = FALSE))) # reorganise data from highest to lowest.
+}
+seaBass %>%
+  ggplot(aes(x=reorder_size(Unique.Name), fill = Nursery)) + 
+  geom_bar() + 
+  coord_flip() +
+  labs(x = "Location",
+       y = "Frequency",
+       title = "Sea Bass Data Based on Nursery and All Site Names",
+       subtitle = "Data 1998-2018")
+```
+Based on the above plot Head of Polwheveral Creek is the highest Site visited and followed by top seven that has more than 15 plus frequent. Furthermore, the plot also shows the Fal and Helford nurseries have top three sites represented them. In Fal top sites visited were **Lamorran Gully**, **Ruan Creek**, and **Entrance Ruan Creek**. 
+
+In Helford top sites visited were **Head of Polwheveral Creek**, **Bonallack** and **Merthen**. Therefore, by looking at the given plot, sites in Fal nursery are more *balance* compare to in Helford nursery where Head of Polwheveral Creek visited more frequently than Bonallack and Merthen.
+
+#
+```{r message=FALSE, error=FALSE, echo=FALSE, fig.height=3, fig.width=4.5, fig.align='center', fig.show='hold'}
+# Select Helford Nursery
+helfordNursery <- subset(seaBass, Nursery == "Helford", select = c("Date", "years", "months", "yearday", 
+                                                         "Site.Name", "Unique.Name", "Nursery"))
+#reorder levels
+reorder_size <- function(x) {
+        factor(x, levels = names(sort(table(x), decreasing = FALSE))) # reorganise data from highest to lowest.
+}
+helfordNursery %>%
+  ggplot(aes(x=reorder_size(Unique.Name))) + 
+  geom_bar(fill = "#56B4E9") + 
+  coord_flip() +
+  labs(x = "Location",
+       y = "Frequency",
+       title = "Sea Bass Data Based on Helford Nursery",
+       subtitle = "Data 1998-2018") +
+  theme(plot.title = element_text(size = 8),
+        plot.subtitle = element_text(size = 5))
+#
+# Select Fal Nursery
+falNursery <- subset(seaBass, Nursery == "Fal", select = c("Date", "years", "months", "yearday", 
+                                                         "Site.Name", "Unique.Name", "Nursery"))
+#reorder levels
+reorder_size <- function(x) {
+        factor(x, levels = names(sort(table(x), decreasing = FALSE))) # reorganise data from highest to lowest.
+}
+falNursery %>%
+  ggplot(aes(x=reorder_size(Unique.Name))) + 
+  geom_bar(fill = "#D55E00") + 
+  coord_flip() +
+  labs(x = "Location",
+       y = "Frequency",
+       title = "Sea Bass Data Based on Fal Nursery",
+       subtitle = "Data 1998-2018") +
+  theme(plot.title = element_text(size = 8),
+        plot.subtitle = element_text(size = 5))
+
+```
+In addition, the above plots shows that in **Helford nursery it has 10 sites** and in **Fal nursery it has 13 sites** visited. However, in Helford nursery it does not have a very good distribution because only **Head of Polwehveral Creek that shows up to 40 frequency** compare to others sites. On the other hand, in Fal nursery, it does show a very good distribution because the top site is **Lamorran Gully and it visited more than 30 ** and compare to **Ruan Creek** and **Entrance Ruan**, **they were visited up to 20 times**. 
+
+So, it could be assumed that there is a *'good'* coverage in Fal nursery in multiple sites than in Helford nursery. Therefore, based on the above plots it shows that Fal Nursery has more *'balance'* in term of site visited during sampled compare to Helford Nursery. This discussion will be continued in **Site Condition Analysis Chapter**. 
+
+# Mapping in R is in development
+
+## Spatial Analysis - Based on All Site Names (Early look - Under Development)
+```{r message=FALSE, error=FALSE, warning=FALSE, echo=FALSE, fig.width=15, fig.height=9.5}
+#
+qmplot(Longitude, Latitude, data = seaBass, colour = Unique.Name, size = I(3), darken = .3)
+```
+This has been approved and cross check using grid reference and Google Earth to check all the Site is 'real' names/place. 
+
+The left bottom is Helford Nursery and the top right is Fal Nursery.
+
+* The Sites that belong to Helford Nursery as follow:
+      + Head of Polwheveral Creek
+      + Bonallack
+      + Merthen
+      + Groyne Point
+      + The Bar
+      + Entrance of Head of Polwheveral Creek
+      + Entrance of Porth Navas
+      + Gweek
+      + Bosahan
+      + Mawgan Creek
+      
+* The Sites that belong to Fal Nursery as follow: 
+      + Lamorran Gully
+      + Ruan Creek
+      + Entrance Ruan Creek
+      + Polingey Creek
+      + Lamorran
+      + Gorrangoras Creek
+      + Cowlands Creek
+      + Blaze Bar
+      + Ruan Lanihorne
+      + St Just Harbour
+      + Channels Creek
+      + Restronguest Weir
+      + Carick Carly's Rock
+
+# Bass Sampling Based on All Site Names 1998-2018 (Under Development)
+```{r message=FALSE, error=FALSE, echo=FALSE, warning=FALSE, fig.width=25, fig.height=17.5, fig.align='center',fig.show='hold'}
+# Plot using ggplot with combination of geom_bar and facet_wrap
+library(ggforce)
+ggplot(seaBass) +
+  geom_bar(aes(x = years, fill = NetTechnique)) +
+  scale_x_continuous(breaks = seq(1998,2018)) + # This is to set x axis respectively.
+  scale_y_continuous(breaks = seq(0,7)) + # This is to set y axis respectively.
+  facet_wrap(~Unique.Name, ncol = 3) + # Group data based on desire column
+                                      # ncol = 3, this is to adjust so the 'visualisation' is presentable
+  labs(x = NULL,
+       y = "Count",
+       title = "Base Sampled on All Sites",
+       subtitle = "Data 1998-2018")
+```
+
+# Bass Sampling Analysis Spring and Autumn
+
+## Bass Sampling Spring on All Site Names 1998-2018 (Under Development)
+```{r message=FALSE, error=FALSE, echo=FALSE, warning=FALSE, fig.width=25, fig.height=17.5, fig.align='center',fig.show='hold'}
+# Set month and convert to binary Spring and Autumn
+seaBass$month <- month(seaBass$Date)
+seaBass <- seaBass %>%
+  mutate( seasonal =
+            case_when(
+              month %in% 3:5 ~ "Spring"
+            ))
+# Plot using ggplot with combination of geom_bar and facet_wrap
+ggplot(seaBass[ !is.na(seaBass$seasonal), ]) + # [ !is.na(data$column), ] this to exclude                                                                                         NAs data 
+  geom_bar(aes(x = years, fill = NetTechnique)) +
+  scale_x_continuous(breaks = seq(1998,2018)) + # This is to set x axis respectively.
+  scale_y_continuous(breaks = seq(0,7)) + # This is to set y axis respectively.
+  facet_wrap(~Unique.Name + seasonal, ncol = 3) + # Group data based on desire column
+                                      # ncol = 3, this is to adjust so the 'visualisation' is presentable
+  labs(x = "Years",
+       y = "Count",
+       title = "Base Sampled in Spring on All Sites",
+       subtitle = "Data 1998-2018")
+```
+
+## Bass Sampling Autumn on All Site Names 1998-2018 (Under Development)
+```{r message=FALSE, error=FALSE, echo=FALSE, warning=FALSE, fig.width=25, fig.height=17.5, fig.align='center',fig.show='hold'}
+# Set month and convert to binary Spring and Autumn
+seaBass$month <- month(seaBass$Date)
+seaBass <- seaBass %>%
+  mutate( seasonal =
+            case_when(
+              month %in% 6:8 ~ "Summer"
+            ))
+# Plot using ggplot with combination of geom_bar and facet_wrap
+ggplot(seaBass[ !is.na(seaBass$seasonal), ]) + # [ !is.na(data$column), ] this to exclude                                                                                         NAs data 
+  geom_bar(aes(x = years, fill = NetTechnique)) +
+  scale_x_continuous(breaks = seq(1998,2018)) + # This is to set x axis respectively.
+  scale_y_continuous(breaks = seq(0,7)) + # This is to set y axis respectively.
+  facet_wrap(~Unique.Name + seasonal, ncol = 3) + # Group data based on desire column
+                                      # ncol = 3, this is to adjust so the 'visualisation' is presentable
+  labs(x = NULL,
+       y = "Count",
+       title = "Base Sampled in Autumn on All Sites",
+       subtitle = "Data 1998-2018")
+```
+
+# The gear type section is still in development.
+
+## Gear Type Use Net Use to Sampling at All Site Names (Under Development)
+```{r message=FALSE, error=FALSE, warning=FALSE, echo=FALSE, fig.width=15, fig.height=9.5, fig.align='center',fig.show='hold'}
+# Plot using ggplot with combination of geom_bar and facet_wrap
+ggplot(data = seaBass[ !is.na(seaBass$GearType), ], aes(x = Year0AverageFL))+ # [ !is.na(data$column), ] this to exclude                                                                                         NAs data 
+  geom_bar(stat = "count", na.rm = TRUE) +
+  facet_wrap(GearType ~ Net.m) + # Group data based on desire column
+  labs(x = "Fork Length (meter)",
+       y = "Count",
+       title = "Gear Type Length Use to Sampling",
+       subtitle = "Data 1998-2018") +
+ scale_x_continuous(breaks = seq(0.0,12.0)) # This is to set year respectively from 0-12.
+```
+
+## Net Technique Use to Sampling at All Site Names (Under Development)
+```{r message=FALSE, error=FALSE, warning=FALSE, echo=FALSE, fig.width=15, fig.height=9.5, fig.align='center',fig.show='hold'}
+# Plot using ggplot with combination of geom_bar and facet_wrap
+ggplot(data = seaBass[ !is.na(seaBass$NetTechnique), ], aes(x = Year0AverageFL))+ # [ !is.na(data$column), ] this to exclude                                                                                         NAs data 
+  geom_bar(stat = "count", na.rm = TRUE) +
+  facet_wrap(~NetTechnique) + # Group data based on desire column
+  labs(x = "Fork Length (meter)",
+       y = "Count",
+       title = "Net Technique Use to Sampling",
+       subtitle = "Data 1998-2018") +
+ scale_x_continuous(breaks = seq(0.0,12.0)) # This is to set year respectively from 0-12.
+```
+
+```{r message = FALSE, error=FALSE, warning=FALSE, echo=FALSE, fig.width=9, fig.height=4.5,fig.align='center', results='asis'}
+# # cpue - catch-per-Unit-effort
+# cpue_data <- seaBass%>%
+#   # group by years and unique site name so that you can calcualte CPUE for every trip in every year.
+#   group_by(years, Unique.Name)%>%
+#   # For each year and Unique Name, calculate CPUE for each trip by dividing sum of catch by the trip the number of fishing hours
+#   summarize(Trip_CPUE = sum(Year0class) / mean(`Duration(Mins)`, na.rm = TRUE)) %>%
+#   # Next, just group by year so we can calculate median CPUE for each year across all trips in the year
+#   group_by(years) %>%
+#   # Calculate median CPUE for each year
+#   summarize(Median_CPUE_catch_mins = median(Trip_CPUE))
+# #
+# kable(cpue_data[1:2], caption = "Catch-per-Unit-effort Fishing Duration")
+```
+
+# Catch effort on All Site by Area
+```{r message = FALSE, error=FALSE, warning=FALSE, echo=FALSE, fig.width=9, fig.height=4.5,fig.align='center', results='asis'}
+seaBass[,"CPUEArea"]<-seaBass[,"Year0class"]/seaBass[,"AreaNetted"]
+seaBass[,"CPUEArea"]
+```
+
+\pagebreak
+
+# Chapter 2 - Selected Unique Site Names to expand the analysis
+
+Site Names that were eliminated (total 14 of 23 sites eliminated):
+**Bosahan**, **Blaze Bar**, **Channels Creek**, **Carik Carl Rock**, **Cowlands Creeks**, **Gorrangoras Creek**, **Groyne Point**, **Gweek**, **Mawgan Creek**, **Polingey Creek**, **Ruan Lanihorne**, **St Just Harbour**, **The Bar**, **Entrance of Port Navas**. Chosen *'Good'* Coverage during Sampling as follow:
+```{r message=FALSE, error=FALSE, echo=FALSE, fig.height=5.5, fig.width=10, fig.align='center'}
+# Subsetting data to select only data we need.
+bassAnalysis <- subset(seaBass, Use_row == 1, select = c("Date", "years", "months", "yearday", 
+                                                         "Site.Name", "Unique.Name", "Nursery",
+                                                         "Longitude", "Latitude", 
+                                                         "Year0class", 
+                                                         "Year0AverageFL",
+                                                         "Year1class", 
+                                                         "Year1AverageFL",
+                                                         "Year2class", 
+                                                         "Year2AverageFL",
+                                                         "Year3class", 
+                                                         "Year3AverageFL",
+                                                         "Year4class", 
+                                                         "Year4AverageFL",
+                                                         "X.coord",
+                                                         "Y.coord",
+                                                         "Air.Temp",
+                                                         "Wind.Direction",
+                                                         "Cloud.Condition",
+                                                         "Precipitation",
+                                                         "Water.Temp",
+                                                         "Salinity",
+                                                         "Turbidity",
+                                                         "AverageDepth",
+                                                         "GearType",
+                                                         "Net.m",
+                                                         "Deep.m",
+                                                         "Mesh.mm",
+                                                         "CatchMethod",
+                                                         "HaulRun",
+                                                         "Duration(Mins)",
+                                                         "AreaNetted",
+                                                         "NetheldTime",
+                                                         "NetTechnique"))
+#reorder levels
+reorder_size <- function(x) {
+        factor(x, levels = names(sort(table(x), decreasing = FALSE))) # reorganise data from highest to lowest.
+}
+bassAnalysis %>%
+  ggplot(aes(x=reorder_size(Unique.Name), fill = Nursery)) + 
+  geom_bar() + 
+  coord_flip() +
+  labs(x = "Location",
+       y = "Frequency",
+       title = "Sea Bass Data Based on Nursery and Unique Site Names",
+       subtitle = "Data 1998-2018")
+```
+These Unique Site Names were chosen because the consistency / 'full' coverage of sampling throughout the year. One of the main factors is the frequency of visited by Derek Goodwin and a voluntery team during sampling.
+
+# Mapping in R is in development
+
+## Spatial Analysis - Based on Unique Name (Early look - Under Development)
+```{r message=FALSE, error=FALSE, warning=FALSE, echo=FALSE, fig.width=15, fig.height=4.5}
+#
+qmplot(Longitude, Latitude, data = bassAnalysis, colour = Unique.Name, size = I(3), darken = .3)
+```
+
+This has been approved and cross check using grid reference and Google Earth to check all the Site is 'real' names/place.
+
+# Bass Sampling Based on Unique Site Names 1998-2018 (Under Development)
+```{r message=FALSE, error=FALSE, echo=FALSE, warning=FALSE, fig.width=25, fig.height=17.5, fig.align='center',fig.show='hold'}
+# Plot using ggplot with combination of geom_bar and facet_wrap
+library(ggforce)
+ggplot(bassAnalysis) +
+  geom_bar(aes(x = years, fill = NetTechnique)) +
+  scale_x_continuous(breaks = seq(1998,2018)) + # This is to set x axis respectively.
+  scale_y_continuous(breaks = seq(0,7)) + # This is to set y axis respectively.
+  facet_wrap(~Unique.Name, ncol = 3) + # Group data based on desire column
+                                      # ncol = 3, this is to adjust so the 'visualisation' is presentable
+  labs(x = NULL,
+       y = "Count",
+       title = "Base Sampled on Unique Site",
+       subtitle = "Data 1998-2018")
+```
+
+## Bass Sampling Spring on Unique Site Names 1998-2018 (Under Development)
+```{r message=FALSE, error=FALSE, echo=FALSE, warning=FALSE, fig.width=25, fig.height=17.5, fig.align='center',fig.show='hold'}
+# Set month and convert to binary Spring and Autumn
+bassAnalysis$month <- month(bassAnalysis$Date)
+bassAnalysis <- bassAnalysis %>%
+  mutate( seasonal =
+            # ifelse(month %in% c(5,6,7,8), "Spring", "Autumn"
+            case_when(
+              month %in% 4:6 ~ "Spring"
+            ))
+# Plot using ggplot with combination of geom_bar and facet_wrap
+ggplot(bassAnalysis[ !is.na(bassAnalysis$seasonal), ]) + # [ !is.na(data$column), ] this to exclude                                                                                         NAs data 
+  geom_bar(aes(x = years, fill = NetTechnique)) +
+  scale_x_continuous(breaks = seq(1998,2018)) + # This is to set x axis respectively.
+  scale_y_continuous(breaks = seq(0,7)) + # This is to set y axis respectively.
+  facet_wrap(~Unique.Name + seasonal, ncol = 3) + # Group data based on desire column
+                                      # ncol = 3, this is to adjust so the 'visualisation' is presentable
+  labs(x = NULL,
+       y = "Count",
+       title = "Base Sampled in Spring on Unique Sites",
+       subtitle = "Data 1998-2018")
+```
+
+## Bass Sampling Autumn on Unique Site Names 1998-2018 (Under Development)
+```{r message=FALSE, error=FALSE, echo=FALSE, warning=FALSE, fig.width=25, fig.height=17.5, fig.align='center',fig.show='hold'}
+# Set month and convert to binary Spring and Autumn
+bassAnalysis$month <- month(bassAnalysis$Date)
+bassAnalysis <- bassAnalysis %>%
+  mutate( seasonal =
+            # ifelse(month %in% c(5,6,7,8), "Spring", "Autumn"
+            case_when(
+              month %in% 7:9 ~ "Autumn"
+            ))
+# Plot using ggplot with combination of geom_bar and facet_wrap
+ggplot(bassAnalysis[ !is.na(bassAnalysis$seasonal), ]) + # [ !is.na(data$column), ] this to exclude                                                                                         NAs data 
+  geom_bar(aes(x = years, fill = NetTechnique)) +
+  scale_x_continuous(breaks = seq(1998,2018)) + # This is to set x axis respectively.
+  scale_y_continuous(breaks = seq(0,7)) + # This is to set y axis respectively.
+  facet_wrap(~Unique.Name + seasonal, ncol = 3) + # Group data based on desire column
+                                      # ncol = 3, this is to adjust so the 'visualisation' is presentable
+  labs(x = NULL,
+       y = "Count",
+       title = "Base Sampled in Autumn on Unique Sites",
+       subtitle = "Data 1998-2018")
+```
+
+# The gear type section is still in development
+
+## Gear Type Use Net Length Use to Sampling at Unique Site Names (Under Development)
+```{r message=FALSE, error=FALSE, warning=FALSE, echo=FALSE, fig.width=15, fig.height=9.5, fig.align='center',fig.show='hold'}
+# Plot using ggplot with combination of geom_bar and facet_wrap
+ggplot(data = bassAnalysis[ !is.na(bassAnalysis$GearType), ], aes(x = Year0AverageFL))+ # [ !is.na(data$column), ] this to exclude                                                                                         NAs data 
+  geom_bar(stat = "count", na.rm = TRUE) +
+  facet_wrap(GearType ~ Net.m) + # Group data based on desire column
+  labs(x = "Fork Length (meter)",
+       y = "Count",
+       title = "Gear Type Length Use to Sampling",
+       subtitle = "Data 1998-2018") +
+ scale_x_continuous(breaks = seq(0,12)) # This is to set year respectively from 0-12.
+```
+
+# Catch effort on All Site by Duration of Fishing
+```{r message = FALSE, error=FALSE, warning=FALSE, echo=FALSE, fig.width=15, fig.height=9.5, fig.align='center', results='asis'}
+# cpue - catch-per-Unit-effort
+cpue_data <- bassAnalysis%>%
+  # group by years and unique site name so that you can calcualte CPUE for every trip in every year.
+  group_by(years, Unique.Name)%>%
+  # For each year and Unique Name, calculate CPUE for each trip by dividing sum of catch by the trip the number of fishing hours
+  summarize(Trip_CPUE = sum(Year0class) / mean(`Duration(Mins)`, na.rm = TRUE)) %>%
+  # Next, just group by year so we can calculate median CPUE for each year across all trips in the year
+  group_by(years) %>%
+  # Calculate median CPUE for each year
+  summarize(Median_CPUE_catch_mins = median(Trip_CPUE))
+#
+kable(cpue_data[1:2], caption = "Catch-per-Unit-effort")
+```
+
+```{r message=FALSE, error=FALSE, echo=FALSE}
+detach(seaBass)
+```
+
+# Chapter 3 - Standardised Site analysis
+```{r message=FALSE, echo=FALSE, error=FALSE}
+choosenSite <- read_csv("BassCombineSite.csv", na = c("", "NA", "."))
+attach(choosenSite) 
+
+# add month to data_frame
+# seaBass$year <- year(seaBass$Date)
+# #
+# seaBass$month <- month(seaBass$Date)
+# #
+# seaBass$Year <- format(as.Date(seaBass$Date), "%Y")
+# #
+# seaBass$Month <- format(as.Date(seaBass$Date), "%m")
+# # 
+# myData <- data.frame(seaBass, seaBass$Year, seaBass$Month)
+```
+
+The following plot shows the combination of site to get full coverage on each site. In the previous chapter, the site that has been chosen for further analysis are **Head of Polwheveral Creek**, **Merthen**, and **Bonallack** in Helford Nursery. In Fal Nursery, **Ruan Creek**, **Entrance Ruan Creek**, **Lamorran**, and **Lamorran Gully**.
+
+In this chapter, the researcher combine **Merthen** and **Bonallack** together in order to achieve full coverage. The reason is that **Merthen** and **Bonallack** is close to each other and has potential to fullfil each other to get full coverage. The name of the site become **Bonallack Merthen**.
+
+Secondly, the researcher also decided to combine **Entrance Ruan Creek**, **Ruan Creek**, **Lamorran**, and **Lamorran Gully**. Base on chapter 2 map, these sites were in the same area and the distance not too far as well [not yet calculated]. Therefore, to fulfil the full coverage of sampling researcher decided to combine them together and named them as **Ruan Creek**.
+
+Finally, **Head of Polwheveral Creek** is only one site from Helford Nursery. Base on the available data and base on figure in chapter 1 and 2, **Head of Polwheveral Creek** has full coverage on its own. 
+
+As a result, the chosen site to be analysed now are **Bonallack Merthen**, **Head of Polwheveral Creek**, and **Ruan Creek**.
+
+```{r message=FALSE, error=FALSE, echo=FALSE, fig.height=5.5, fig.width=10, fig.align='center'}
+#reorder levels
+reorder_size <- function(x) {
+        factor(x, levels = names(sort(table(x), decreasing = FALSE))) # reorganise data from highest to lowest.
+}
+choosenSite %>%
+  ggplot(aes(x=reorder_size(Unique.Name), fill = Nursery)) + 
+  geom_bar() + 
+  coord_flip() +
+  labs(x = "Location",
+       y = "Frequency",
+       title = "Sea Bass Data Based on Combine Site Name",
+       subtitle = "Data 1998-2018")
+```
+
+## Spatial Analysis - Based on Combining closes site to achieve full coverage (Early look - Under Development)
+```{r message=FALSE, error=FALSE, warning=FALSE, echo=FALSE, fig.width=15, fig.height=9.5}
+#
+qmplot(Longitude, Latitude, data = choosenSite, colour = Unique.Name, size = I(3), darken = .3)
+```
+
+# Bass Sampling Based on Combining Closes Site (Under Development)
+```{r message=FALSE, error=FALSE, echo=FALSE, warning=FALSE, fig.width=25, fig.height=17.5, fig.align='center',fig.show='hold'}
+# Plot using ggplot with combination of geom_bar and facet_wrap
+library(ggforce)
+ggplot(choosenSite) +
+  geom_bar(aes(x = years, fill = NetTechnique)) +
+  scale_x_continuous(breaks = seq(1998,2018)) + # This is to set x axis respectively.
+  scale_y_continuous(breaks = seq(0,7)) + # This is to set y axis respectively.
+  facet_wrap(~Unique.Name, ncol = 3) + # Group data based on desire column
+                                      # ncol = 3, this is to adjust so the 'visualisation' is presentable
+  labs(x = NULL,
+       y = "Count",
+       title = "Base Sampled on Combine Sites",
+       subtitle = "Data 1998-2018")
+```
+
+# Bass Sampling Analysis Spring and Autumn
+
+## Bass Sampling Spring on All Site Names 1998-2018 (Under Development)
+```{r message=FALSE, error=FALSE, echo=FALSE, warning=FALSE, fig.width=25, fig.height=17.5, fig.align='center',fig.show='hold'}
+# Set month and convert to binary Spring and Autumn
+choosenSite$month <- month(choosenSite$Date)
+choosenSite <- choosenSite %>%
+  mutate( seasonal =
+            # ifelse(month %in% c(5,6,7,8), "Spring", "Autumn"
+            case_when(
+              month %in% 4:6 ~ "Spring"
+            ))
+# Plot using ggplot with combination of geom_bar and facet_wrap
+ggplot(choosenSite[ !is.na(choosenSite$seasonal), ]) + # [ !is.na(data$column), ] this to exclude                                                                                         NAs data 
+  geom_bar(aes(x = years, fill = NetTechnique)) +
+  scale_x_continuous(breaks = seq(1998,2018)) + # This is to set x axis respectively.
+  scale_y_continuous(breaks = seq(0,7)) + # This is to set y axis respectively.
+  facet_wrap(~Unique.Name + seasonal, ncol = 3) + # Group data based on desire column
+                                      # ncol = 3, this is to adjust so the 'visualisation' is presentable
+  labs(x = "Years",
+       y = "Count",
+       title = "Base Sampled in Spring on All Sites",
+       subtitle = "Data 1998-2018")
+```
+
+## Bass Sampling Autumn on All Site Names 1998-2018 (Under Development)
+```{r message=FALSE, error=FALSE, echo=FALSE, warning=FALSE, fig.width=25, fig.height=17.5, fig.align='center',fig.show='hold'}
+# Set month and convert to binary Spring and Autumn
+choosenSite$month <- month(choosenSite$Date)
+choosenSite <- choosenSite %>%
+  mutate( seasonal =
+            # ifelse(month %in% c(5,6,7,8), "Spring", "Autumn"
+            case_when(
+              month %in% 7:9 ~ "Autumn"
+            ))
+# Plot using ggplot with combination of geom_bar and facet_wrap
+ggplot(choosenSite[ !is.na(choosenSite$seasonal), ]) + # [ !is.na(data$column), ] this to exclude                                                                                         NAs data 
+  geom_bar(aes(x = years, fill = NetTechnique)) +
+  scale_x_continuous(breaks = seq(1998,2018)) + # This is to set x axis respectively.
+  scale_y_continuous(breaks = seq(0,7)) + # This is to set y axis respectively.
+  facet_wrap(~Unique.Name + seasonal, ncol = 3) + # Group data based on desire column
+                                      # ncol = 3, this is to adjust so the 'visualisation' is presentable
+  labs(x = NULL,
+       y = "Count",
+       title = "Base Sampled in Autumn on All Sites",
+       subtitle = "Data 1998-2018")
+```
+
+# The gear type section is still in development.
+
+## Gear Type Use Net Use to Sampling at All Site Names (Under Development)
+```{r message=FALSE, error=FALSE, warning=FALSE, echo=FALSE, fig.width=15, fig.height=9.5, fig.align='center',fig.show='hold'}
+# Plot using ggplot with combination of geom_bar and facet_wrap
+ggplot(data = choosenSite[ !is.na(choosenSite$GearType), ], aes(x = Year0AverageFL))+ # [ !is.na(data$column), ] this to exclude                                                                                         NAs data 
+  geom_bar(stat = "count", na.rm = TRUE) +
+  facet_wrap(GearType ~ Net.m) + # Group data based on desire column
+  labs(x = "Fork Length (meter)",
+       y = "Count",
+       title = "Gear Type Length Use to Sampling",
+       subtitle = "Data 1998-2018") +
+ scale_x_continuous(breaks = seq(0.0,12.0)) # This is to set year respectively from 0-12.
+```
+
+## Net Technique Use to Sampling at All Site Names (Under Development)
+```{r message=FALSE, error=FALSE, warning=FALSE, echo=FALSE, fig.width=15, fig.height=9.5, fig.align='center',fig.show='hold'}
+# Plot using ggplot with combination of geom_bar and facet_wrap
+ggplot(data = choosenSite[ !is.na(choosenSite$NetTechnique), ], aes(x = Year0AverageFL))+ # [ !is.na(data$column), ] this to exclude                                                                                         NAs data 
+  geom_bar(stat = "count", na.rm = TRUE) +
+  facet_wrap(~NetTechnique) + # Group data based on desire column
+  labs(x = "Fork Length (meter)",
+       y = "Count",
+       title = "Net Technique Use to Sampling",
+       subtitle = "Data 1998-2018") +
+ scale_x_continuous(breaks = seq(0.0,12.0)) # This is to set year respectively from 0-12.
+```
+
+# Catch effort on All Site by Duration of Fishing
+```{r message = FALSE, error=FALSE, warning=FALSE, echo=FALSE, fig.width=15, fig.height=9.5, fig.align='center', results='asis'}
+# cpue - catch-per-Unit-effort
+cpue_data <- choosenSite%>%
+  # group by years and unique site name so that you can calcualte CPUE for every trip in every year.
+  group_by(years, Unique.Name)%>%
+  # For each year and Unique Name, calculate CPUE for each trip by dividing sum of catch by the trip the number of fishing hours
+  summarize(Trip_CPUE = sum(Year0class) / mean(`Duration(Mins)`, na.rm = TRUE)) %>%
+  # Next, just group by year so we can calculate median CPUE for each year across all trips in the year
+  group_by(years) %>%
+  # Calculate median CPUE for each year
+  summarize(Median_CPUE_catch_mins = median(Trip_CPUE))
+#
+kable(cpue_data[1:2], caption = "Catch-per-Unit-effort")
+```
+
+\pagebreak
+
+# Site Condition Analysis
+
+This chapter will be continued **Comparison and Observation in Fal and Helford Nursery Site visited** discussion. This chapter will look at on site condition on each Nursery thourghout the years (1998-2018). This analysis would be useful, to help the reseracher to expand the options to decide which sites need to be focused to further analysis of *what factor that may or may not drivers' abundance and juvenile sea bass*.
+
+## Changes in Water Temperature across All Sites in Helford Nursery
+
+Below plots are showing the average of water temperature in Helford and Fal nusery at all Sites in 1998-2018. According to Kelley (2002), spawning success is dependent more on sea-temperature being sufficiently high (over 8$^\circ$) at the material time than on size of spawning stock.
+
+```{r message=FALSE, error=FALSE, echo=FALSE, warning=FALSE, fig.width=15, fig.height=8.5, fig.align='center',fig.show='hold'}
+# Helford nursery discussion.
+df_helford <- subset(seaBass, Nursery == "Helford", select = c("Date", "years", "months", "yearday", 
+                                                         "Site.Name", "Unique.Name", "Nursery",
+                                                         "Air.Temp",
+                                                         "Wind.Direction",
+                                                         "Cloud.Condition",
+                                                         "Precipitation",
+                                                         "Water.Temp",
+                                                         "Salinity",
+                                                         "Turbidity",
+                                                         "AverageDepth",
+                                                         "Surface"))
+#
+require(MASS)
+require(dplyr)
+xd_helford <-
+  df_helford %>%
+  filter(Unique.Name %in% c("Head of Polwheveral Creek", "Merthen", "Bonallack") &
+  between(years, 1998,2018)) %>%
+  dplyr::select(Unique.Name, years, Water.Temp) %>%
+  na.omit()
+#
+id_helford <-
+  df_helford %>%
+  group_by(Unique.Name, years) %>%
+  summarise(Water.Temp = mean(Water.Temp))
+#
+ggplot(id_helford, aes(x = years, y = Water.Temp, color = Unique.Name)) +
+  geom_point(aes(group = Unique.Name), alpha = .3) +
+  geom_point(data = xd_helford, alpha = .8, size = 3) +
+  theme_bw() +
+  labs(
+    title = "Changes in Water Temperature\nacross Helford Sites",
+    x = NULL,
+    y = "Water Temperature (Celcius)",
+    color = NULL
+  ) +
+  scale_x_continuous(breaks = seq(1998,2018)) +
+  scale_y_continuous(breaks = seq(0,30))
+
+```
+
+In Helford Nursery, water temperature changes in Head of Polwheveral Creek (**blue line**) shows constant changes. In 2013, Head of Polwheveral Creek had an extreme decrease from 2012-2013, however, it then had an extreme increase when transition to 2014. Furthermore, in the next 3 years Head of Polwheveral Creek water temperature had a similar transition during 2016-2017. Therefore, from this extreme changes, it can be estimated that in 2013-2014 Head of Polwheveral Creek experience low catch in the begining of the year but nearing to the end of the year 2013-2014 Head of Polwheveral Creek had a good amount of catch and same goes during 2016-2017.
+
+Compare to Bonallack (**red line**), in period 1999-2000, there was a fair change in temperature at the end of 1999. At the begining of 2000, there was an extreme low temperature and gradually increase throughout the year until nearing to the end of 2000. Between, 1999-2000, it can be considered that low catch is expected because in period 1998-1999 water temperature were slowly increase and this is the same reason where there is lack of data in 1998. After 2005, water temperature in Bonallack gradually went down and keep went down until 2007. Therefore, this can be assumed that there was not enough *D.labrax* data and catch. In addition, in 2010-2013, the temperature constantly changes, even though there was not significant, but in the begining of 2012, the temperature went down fairly hard. This can be infered that during the year 2011-2012, only a few catch of fish but during transition and nearly at the end of 2013 there was a good amount of catch.
+
+On the other hand, in 1998 Merthen (**purple line**) the water temperature slowly increase and by the end of 1998 and the begining of 1999 water temperature gradually decrease, however, based on these changes the number of catch could be assumed fairly decent. Furthermore, in 2000-2006, the water temperature constantly decrease because of lack of data taken by Derek Goodwin and a voluntery team. However, judging by the behaviour of this water temperature, between 2000-2006 it can be suspected that the number of catch were fairly low. In addition, in 2007 the water temperature show a positive behaviour where it increase slowly this can be assumed that the number of catch and fish were fairly decent. Moreover, given on the available data, during 2013-2015, there was significant falling and this can be assumed that the number of catch were low and lack of data taken. However, in the transition between 2015-2017 the water temperature increase can be speculated that the number of catch were significantly increase.    
+
+## Changes in Water Temperature across All Sites in Fal Nursery
+```{r message=FALSE, error=FALSE, echo=FALSE, warning=FALSE, fig.width=15, fig.height=8.5, fig.align='center',fig.show='hold'}
+# Fal nursery discussion.
+df_fal <- subset(seaBass, Nursery == "Fal", select = c("Date", "years", "months", "yearday", 
+                                                         "Site.Name", "Unique.Name", "Nursery",
+                                                         "Air.Temp",
+                                                         "Wind.Direction",
+                                                         "Cloud.Condition",
+                                                         "Precipitation",
+                                                         "Water.Temp",
+                                                         "Salinity",
+                                                         "Turbidity",
+                                                         "AverageDepth",
+                                                         "Surface"))
+#
+require(MASS)
+require(dplyr)
+xd_fal <-
+  df_fal %>%
+  filter(Unique.Name %in% c("Lamorran Gully", "Ruan Creek", "Entrance Ruan Creek") &
+  between(years, 1998,2018)) %>%
+  dplyr::select(Unique.Name, years, Water.Temp) %>%
+  na.omit()
+#
+id_fal <-
+  df_fal %>%
+  group_by(Unique.Name, years) %>%
+  summarise(Water.Temp = mean(Water.Temp))
+#
+ggplot(id_fal, aes(x = years, y = Water.Temp, color = Unique.Name)) +
+  geom_point(aes(group = Unique.Name), alpha = .3) +
+  geom_point(data = xd_fal, alpha = .8, size = 3) +
+  theme_bw() +
+  labs(
+    title = "Changes in Water Temperature\nacross Fal Sites",
+    x = NULL,
+    y = "Water Temperature (Celcius)",
+    color = NULL
+  ) +
+  scale_x_continuous(breaks = seq(1998,2018)) +
+  scale_y_continuous(breaks = seq(0,30)) 
+```
+
+\elandscape
