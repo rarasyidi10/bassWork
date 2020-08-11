@@ -32,9 +32,9 @@ library(geofacet)
 library(lattice)
 library(ggmap) # to allow to use 'Google Map'
 library(maps) # to allow to use qmplot
-library(mapdata) # to allow to use data and convert it to map
+library(mapdata)
 library(ggforce)
-setwd("/Users/rafiachmadrasyidi/OneDrive - University of Plymouth/RafiRasyidi-PROJ516 - SeaBassDataandDevelopment/BassAnalysis_New")
+setwd("/Users/rafiachmadrasyidi/Documents/Github/bassWork")
 ```
 
 This PDF document is under development in R. This document will show you the analysis/plots that author has been produced so far. __Please note that there's maybe an inclomplete analysis, typos, or wrong use of term__. 
