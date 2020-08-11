@@ -40,14 +40,12 @@ setwd("/Users/rafiachmadrasyidi/Documents/Github/bassWork")
 This PDF document is under development in R. This document will show you the analysis/plots that author has been produced so far. __Please note that there's maybe an inclomplete analysis, typos, or wrong use of term__. 
 
 - The following are the list of analysis/plots inside document:
-    + Site Location (Under Development)
-    + Salinity and Average Depth (Under Development)
-    + Water and Weather Temperature (Under Development)
-    + Catch Method (Under Development)
-    + Net Techniques (Under Development)
-    + Gear/Equipment use (Under Development)
-    + Machine Learning (Postponed)
-    + Appendices
+    + Site Location 
+    + Salinity and Average Depth 
+    + Water and Weather Temperature 
+    + Catch Method 
+    + Net Techniques 
+    + Gear/Equipment use 
 
 ```{r message=FALSE, echo=FALSE, error=FALSE}
 seaBass <- read_csv("NewDataBass.csv", na = c("", "NA", "."))
@@ -170,7 +168,7 @@ The left bottom is Helford Nursery and the top right is Fal Nursery.
       + Restronguest Weir
       + Carick Carly's Rock
 
-# Bass Sampling Based on All Site Names 1998-2018 (Under Development)
+# Bass Sampling Based on All Site Names 1998-2018
 ```{r message=FALSE, error=FALSE, echo=FALSE, warning=FALSE, fig.width=25, fig.height=17.5, fig.align='center',fig.show='hold'}
 # Plot using ggplot with combination of geom_bar and facet_wrap
 library(ggforce)
@@ -188,7 +186,7 @@ ggplot(seaBass) +
 
 # Bass Sampling Analysis Spring and Autumn
 
-## Bass Sampling Spring on All Site Names 1998-2018 (Under Development)
+## Bass Sampling Spring on All Site Names 1998-2018
 ```{r message=FALSE, error=FALSE, echo=FALSE, warning=FALSE, fig.width=25, fig.height=17.5, fig.align='center',fig.show='hold'}
 # Set month and convert to binary Spring and Autumn
 seaBass$month <- month(seaBass$Date)
@@ -210,7 +208,7 @@ ggplot(seaBass[ !is.na(seaBass$seasonal), ]) + # [ !is.na(data$column), ] this t
        subtitle = "Data 1998-2018")
 ```
 
-## Bass Sampling Autumn on All Site Names 1998-2018 (Under Development)
+## Bass Sampling Autumn on All Site Names 1998-2018
 ```{r message=FALSE, error=FALSE, echo=FALSE, warning=FALSE, fig.width=25, fig.height=17.5, fig.align='center',fig.show='hold'}
 # Set month and convert to binary Spring and Autumn
 seaBass$month <- month(seaBass$Date)
@@ -234,7 +232,7 @@ ggplot(seaBass[ !is.na(seaBass$seasonal), ]) + # [ !is.na(data$column), ] this t
 
 # The gear type section is still in development.
 
-## Gear Type Use Net Use to Sampling at All Site Names (Under Development)
+## Gear Type Use Net Use to Sampling at All Site Names
 ```{r message=FALSE, error=FALSE, warning=FALSE, echo=FALSE, fig.width=15, fig.height=9.5, fig.align='center',fig.show='hold'}
 # Plot using ggplot with combination of geom_bar and facet_wrap
 ggplot(data = seaBass[ !is.na(seaBass$GearType), ], aes(x = Year0AverageFL))+ # [ !is.na(data$column), ] this to exclude                                                                                         NAs data 
@@ -247,7 +245,7 @@ ggplot(data = seaBass[ !is.na(seaBass$GearType), ], aes(x = Year0AverageFL))+ # 
  scale_x_continuous(breaks = seq(0.0,12.0)) # This is to set year respectively from 0-12.
 ```
 
-## Net Technique Use to Sampling at All Site Names (Under Development)
+## Net Technique Use to Sampling at All Site Names
 ```{r message=FALSE, error=FALSE, warning=FALSE, echo=FALSE, fig.width=15, fig.height=9.5, fig.align='center',fig.show='hold'}
 # Plot using ggplot with combination of geom_bar and facet_wrap
 ggplot(data = seaBass[ !is.na(seaBass$NetTechnique), ], aes(x = Year0AverageFL))+ # [ !is.na(data$column), ] this to exclude                                                                                         NAs data 
@@ -339,7 +337,7 @@ These Unique Site Names were chosen because the consistency / 'full' coverage of
 
 # Mapping in R is in development
 
-## Spatial Analysis - Based on Unique Name (Early look - Under Development)
+## Spatial Analysis - Based on Unique Name 
 ```{r message=FALSE, error=FALSE, warning=FALSE, echo=FALSE, fig.width=15, fig.height=4.5}
 #
 qmplot(Longitude, Latitude, data = bassAnalysis, colour = Unique.Name, size = I(3), darken = .3)
@@ -347,7 +345,7 @@ qmplot(Longitude, Latitude, data = bassAnalysis, colour = Unique.Name, size = I(
 
 This has been approved and cross check using grid reference and Google Earth to check all the Site is 'real' names/place.
 
-# Bass Sampling Based on Unique Site Names 1998-2018 (Under Development)
+# Bass Sampling Based on Unique Site Names 1998-2018
 ```{r message=FALSE, error=FALSE, echo=FALSE, warning=FALSE, fig.width=25, fig.height=17.5, fig.align='center',fig.show='hold'}
 # Plot using ggplot with combination of geom_bar and facet_wrap
 library(ggforce)
@@ -363,7 +361,7 @@ ggplot(bassAnalysis) +
        subtitle = "Data 1998-2018")
 ```
 
-## Bass Sampling Spring on Unique Site Names 1998-2018 (Under Development)
+## Bass Sampling Spring on Unique Site Names 1998-2018
 ```{r message=FALSE, error=FALSE, echo=FALSE, warning=FALSE, fig.width=25, fig.height=17.5, fig.align='center',fig.show='hold'}
 # Set month and convert to binary Spring and Autumn
 bassAnalysis$month <- month(bassAnalysis$Date)
@@ -386,7 +384,7 @@ ggplot(bassAnalysis[ !is.na(bassAnalysis$seasonal), ]) + # [ !is.na(data$column)
        subtitle = "Data 1998-2018")
 ```
 
-## Bass Sampling Autumn on Unique Site Names 1998-2018 (Under Development)
+## Bass Sampling Autumn on Unique Site Names 1998-2018
 ```{r message=FALSE, error=FALSE, echo=FALSE, warning=FALSE, fig.width=25, fig.height=17.5, fig.align='center',fig.show='hold'}
 # Set month and convert to binary Spring and Autumn
 bassAnalysis$month <- month(bassAnalysis$Date)
@@ -411,7 +409,7 @@ ggplot(bassAnalysis[ !is.na(bassAnalysis$seasonal), ]) + # [ !is.na(data$column)
 
 # The gear type section is still in development
 
-## Gear Type Use Net Length Use to Sampling at Unique Site Names (Under Development)
+## Gear Type Use Net Length Use to Sampling at Unique Site Names
 ```{r message=FALSE, error=FALSE, warning=FALSE, echo=FALSE, fig.width=15, fig.height=9.5, fig.align='center',fig.show='hold'}
 # Plot using ggplot with combination of geom_bar and facet_wrap
 ggplot(data = bassAnalysis[ !is.na(bassAnalysis$GearType), ], aes(x = Year0AverageFL))+ # [ !is.na(data$column), ] this to exclude                                                                                         NAs data 
@@ -486,13 +484,13 @@ choosenSite %>%
        subtitle = "Data 1998-2018")
 ```
 
-## Spatial Analysis - Based on Combining closes site to achieve full coverage (Early look - Under Development)
+## Spatial Analysis - Based on Combining closes site to achieve full coverage
 ```{r message=FALSE, error=FALSE, warning=FALSE, echo=FALSE, fig.width=15, fig.height=9.5}
 #
 qmplot(Longitude, Latitude, data = choosenSite, colour = Unique.Name, size = I(3), darken = .3)
 ```
 
-# Bass Sampling Based on Combining Closes Site (Under Development)
+# Bass Sampling Based on Combining Closes Site
 ```{r message=FALSE, error=FALSE, echo=FALSE, warning=FALSE, fig.width=25, fig.height=17.5, fig.align='center',fig.show='hold'}
 # Plot using ggplot with combination of geom_bar and facet_wrap
 library(ggforce)
@@ -510,7 +508,7 @@ ggplot(choosenSite) +
 
 # Bass Sampling Analysis Spring and Autumn
 
-## Bass Sampling Spring on All Site Names 1998-2018 (Under Development)
+## Bass Sampling Spring on All Site Names 1998-2018
 ```{r message=FALSE, error=FALSE, echo=FALSE, warning=FALSE, fig.width=25, fig.height=17.5, fig.align='center',fig.show='hold'}
 # Set month and convert to binary Spring and Autumn
 choosenSite$month <- month(choosenSite$Date)
@@ -533,7 +531,7 @@ ggplot(choosenSite[ !is.na(choosenSite$seasonal), ]) + # [ !is.na(data$column), 
        subtitle = "Data 1998-2018")
 ```
 
-## Bass Sampling Autumn on All Site Names 1998-2018 (Under Development)
+## Bass Sampling Autumn on All Site Names 1998-2018
 ```{r message=FALSE, error=FALSE, echo=FALSE, warning=FALSE, fig.width=25, fig.height=17.5, fig.align='center',fig.show='hold'}
 # Set month and convert to binary Spring and Autumn
 choosenSite$month <- month(choosenSite$Date)
@@ -558,7 +556,7 @@ ggplot(choosenSite[ !is.na(choosenSite$seasonal), ]) + # [ !is.na(data$column), 
 
 # The gear type section is still in development.
 
-## Gear Type Use Net Use to Sampling at All Site Names (Under Development)
+## Gear Type Use Net Use to Sampling at All Site Names
 ```{r message=FALSE, error=FALSE, warning=FALSE, echo=FALSE, fig.width=15, fig.height=9.5, fig.align='center',fig.show='hold'}
 # Plot using ggplot with combination of geom_bar and facet_wrap
 ggplot(data = choosenSite[ !is.na(choosenSite$GearType), ], aes(x = Year0AverageFL))+ # [ !is.na(data$column), ] this to exclude                                                                                         NAs data 
@@ -571,7 +569,7 @@ ggplot(data = choosenSite[ !is.na(choosenSite$GearType), ], aes(x = Year0Average
  scale_x_continuous(breaks = seq(0.0,12.0)) # This is to set year respectively from 0-12.
 ```
 
-## Net Technique Use to Sampling at All Site Names (Under Development)
+## Net Technique Use to Sampling at All Site Names
 ```{r message=FALSE, error=FALSE, warning=FALSE, echo=FALSE, fig.width=15, fig.height=9.5, fig.align='center',fig.show='hold'}
 # Plot using ggplot with combination of geom_bar and facet_wrap
 ggplot(data = choosenSite[ !is.na(choosenSite$NetTechnique), ], aes(x = Year0AverageFL))+ # [ !is.na(data$column), ] this to exclude                                                                                         NAs data 
